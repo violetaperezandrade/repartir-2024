@@ -64,9 +64,16 @@ public class GruposService {
     public Grupo agregarGasto(Long id, Gasto gasto) {
 
         Grupo grupo = recuperar(id);
+        validar(gasto);
         montos.acumularAlTotal(grupo, gasto);
         repository.save(grupo);
         return grupo;
+    }
+
+    private void validar(Gasto gasto) {
+        if (gasto == null || !gasto.esValido()) {
+            throw new GrupoInvalidoException();
+        }
     }
 
 }

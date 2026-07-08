@@ -104,6 +104,59 @@ class GruposServiceTest {
     }
 
     @Test
+    void agregarGastoDeCeroAlGrupoDelAlmuerzoLanzaExcepcionYNoModificaElTotal() {
+
+        final Long ID_ALMUERZO = 231L;
+        final Grupo ALMUERZO = crearGrupoAlmuerzoSinGastos(ID_ALMUERZO);
+        final Gasto GASTO_POR_0 = crearGastoPor(0);
+        final BigDecimal $_0_00 = BigDecimal.valueOf(0, 2);
+
+        when(repositoryMock.findById(ID_ALMUERZO)).thenReturn(Optional.of(ALMUERZO));
+
+        assertThrows(GrupoInvalidoException.class, () -> {
+            grupos.agregarGasto(ID_ALMUERZO, GASTO_POR_0);
+        });
+
+        assertThat(ALMUERZO.getTotal()).isEqualTo($_0_00);
+        verify(repositoryMock, never()).save(any());
+    }
+
+    @Test
+    void agregarGastoNegativoAlGrupoDelAlmuerzoLanzaExcepcionYNoModificaElTotal() {
+
+        final Long ID_ALMUERZO = 231L;
+        final Grupo ALMUERZO = crearGrupoAlmuerzoSinGastos(ID_ALMUERZO);
+        final Gasto GASTO_POR_MENOS_500 = crearGastoPor(-500);
+        final BigDecimal $_0_00 = BigDecimal.valueOf(0, 2);
+
+        when(repositoryMock.findById(ID_ALMUERZO)).thenReturn(Optional.of(ALMUERZO));
+
+        assertThrows(GrupoInvalidoException.class, () -> {
+            grupos.agregarGasto(ID_ALMUERZO, GASTO_POR_MENOS_500);
+        });
+
+        assertThat(ALMUERZO.getTotal()).isEqualTo($_0_00);
+        verify(repositoryMock, never()).save(any());
+    }
+
+    @Test
+    void agregarGastoNuloAlGrupoDelAlmuerzoLanzaExcepcionYNoModificaElTotal() {
+
+        final Long ID_ALMUERZO = 231L;
+        final Grupo ALMUERZO = crearGrupoAlmuerzoSinGastos(ID_ALMUERZO);
+        final BigDecimal $_0_00 = BigDecimal.valueOf(0, 2);
+
+        when(repositoryMock.findById(ID_ALMUERZO)).thenReturn(Optional.of(ALMUERZO));
+
+        assertThrows(GrupoInvalidoException.class, () -> {
+            grupos.agregarGasto(ID_ALMUERZO, null);
+        });
+
+        assertThat(ALMUERZO.getTotal()).isEqualTo($_0_00);
+        verify(repositoryMock, never()).save(any());
+    }
+
+    @Test
     void agregarGastoDe300AlGrupoDelAlmuerzoSinGastos() {
 
         final Long ID_ALMUERZO = 231L;
@@ -132,10 +185,7 @@ class GruposServiceTest {
 
     private Gasto crearGastoPor300() {
 
-        Gasto gasto = new Gasto();
-        gasto.setMonto(BigDecimal.valueOf(30000, 2));
-
-        return gasto;
+        return crearGastoPor(300);
     }
 
     @Test
@@ -167,8 +217,13 @@ class GruposServiceTest {
 
     private Gasto crearGastoPor97() {
 
+        return crearGastoPor(97);
+    }
+
+    private Gasto crearGastoPor(int pesos) {
+
         Gasto gasto = new Gasto();
-        gasto.setMonto(BigDecimal.valueOf(9700,2));
+        gasto.setMonto(BigDecimal.valueOf(pesos * 100L,2));
         return gasto;
     }
 }
